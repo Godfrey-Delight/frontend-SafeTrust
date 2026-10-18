@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { DivIcon, type Marker as LeafletMarker } from "leaflet";
 import { Marker } from "react-leaflet";
 import { formatListingPrice } from "@/components/listings/formatListingPrice";
+import { LISTING_PRICE_UNIT } from "@/components/listings/ListingPrice";
 
 interface PriceMarkerProps {
   id: string;
@@ -23,7 +24,7 @@ export function PriceMarker({
   selected = false,
   onSelect,
 }: PriceMarkerProps) {
-  const label = `${formatListingPrice(price)} per month`;
+  const label = `${formatListingPrice(price)} per ${LISTING_PRICE_UNIT}`;
   const icon = new DivIcon({
     className: "", // no default Leaflet square
     html: `<span class="price-pin${selected ? " is-selected" : ""}">${formatListingPrice(price)}</span>`,
@@ -32,7 +33,7 @@ export function PriceMarker({
 
   // Leaflet computes the marker's accessible name from its visible text
   // content (just the price) before falling back to `title`, so `title`
-  // alone never surfaces "per month" to assistive tech. Set aria-label on
+  // alone never surfaces "per night" to assistive tech. Set aria-label on
   // the icon element directly once Leaflet creates it.
   //
   // This needs a ref object read inside its own effect, not a callback ref:

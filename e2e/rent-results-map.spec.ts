@@ -58,7 +58,7 @@ test("pin and card counts/ids match, including 0 and 1 result", async ({
   await expect(cards).toHaveCount(1);
   const cardId = await cards.first().getAttribute("aria-label");
   await expect(page.locator(".price-pin")).toHaveCount(1);
-  await expect(page.getByRole("button", { name: /per month$/ })).toHaveCount(1);
+  await expect(page.getByRole("button", { name: /per night$/ })).toHaveCount(1);
   expect(cardId).toBeTruthy();
 
   // Default (unfiltered) results: pin count matches card count.
@@ -80,11 +80,11 @@ test("selecting a pin highlights and scrolls to its card; selection is keyboard 
 
   // Leaflet gives each marker's icon element role="button", tabIndex and the
   // `title` we pass; `.price-pin` is only the inner styled span.
-  const marker = page.getByRole("button", { name: /per month$/ });
+  const marker = page.getByRole("button", { name: /per night$/ });
   const pin = page.locator(".price-pin");
   await expect(pin).toBeVisible();
   const pinName = await marker.getAttribute("title");
-  expect(pinName).toMatch(/\$[\d,]+\s+per month/);
+  expect(pinName).toMatch(/\$[\d,]+\s+per night/);
 
   await marker.click();
   await expect(pin).toHaveClass(/is-selected/);
