@@ -34,6 +34,12 @@ export interface ApartmentListing extends ApartmentAmenitySummary {
   description: string;
   rating: number;
   favorite?: boolean;
+  maxGuests?: number;
+  maxInfants?: number;
+  availability?: {
+    horizonDays: number;
+    booked: { startDay: number; nights: number }[];
+  };
 }
 
 export interface HotelSearchResult {

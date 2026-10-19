@@ -21,7 +21,10 @@ export function WhoSection({
           label="Adults"
           hint="Ages 13 or above"
           value={guests.adults}
-          max={GUEST_LIMITS.party - guests.children}
+          max={Math.min(
+            GUEST_LIMITS.adults,
+            GUEST_LIMITS.party - guests.children,
+          )}
           onChange={(adults) => onChange({ ...guests, adults })}
         />
         {needsAdult ? (
@@ -37,7 +40,10 @@ export function WhoSection({
         label="Children"
         hint="Ages 2–12"
         value={guests.children}
-        max={GUEST_LIMITS.party - guests.adults}
+        max={Math.min(
+          GUEST_LIMITS.children,
+          GUEST_LIMITS.party - guests.adults,
+        )}
         onChange={(children) => onChange({ ...guests, children })}
       />
       <GuestStepper
