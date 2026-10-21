@@ -2,7 +2,10 @@
 
 import type { ApartmentListing } from "@/types/hotel";
 import Image from "next/image";
-import { MapPin } from "lucide-react";
+import Link from "next/link";
+import { Heart, MapPin, MessageCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import AmenityIcons from "./AmenityIcons";
 import { ListingPrice } from "./ListingPrice";
 import ImageGallery from "./ImageGallery";
@@ -10,12 +13,16 @@ import ImageGallery from "./ImageGallery";
 interface ApartmentDetailProps {
   apartment: ApartmentListing;
   onBook: () => void;
+  isSaved?: boolean;
+  onToggleSaved?: () => void;
 }
 
 /** Render rental details, amenities, owner information, and booking action. */
 export default function ApartmentDetail({
   apartment,
   onBook,
+  isSaved = false,
+  onToggleSaved,
 }: ApartmentDetailProps) {
   return (
     <section className="flex-1 px-6 py-8 lg:px-10">
@@ -27,9 +34,29 @@ export default function ApartmentDetail({
 
       <div className="mt-8 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex-1">
-          <h1 className="text-[34px] font-semibold tracking-[-0.04em] text-foreground">
-            {apartment.name}
-          </h1>
+          <div className="flex items-start justify-between gap-4">
+            <h1 className="text-[34px] font-semibold tracking-[-0.04em] text-foreground">
+              {apartment.name}
+            </h1>
+            {onToggleSaved && (
+              <button
+                type="button"
+                onClick={onToggleSaved}
+                aria-pressed={isSaved}
+                aria-label={
+                  isSaved
+                    ? `Remove ${apartment.name} from Wishlists`
+                    : `Save ${apartment.name} to Wishlists`
+                }
+                className="mt-2 grid h-11 w-11 shrink-0 place-items-center rounded-full text-red-500 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Heart
+                  aria-hidden="true"
+                  className={cn("h-6 w-6", isSaved && "fill-red-500")}
+                />
+              </button>
+            )}
+          </div>
 
           <div className="mt-5 flex items-center gap-3 text-sm text-muted-foreground">
             <span className="grid h-8 w-8 place-items-center rounded-full bg-accent text-accent-foreground">
@@ -60,6 +87,14 @@ export default function ApartmentDetail({
           >
             BOOK
           </button>
+          <Button asChild variant="outline" className="mt-3 min-h-11 w-full">
+            <Link
+              href={`/dashboard/messages/new?listing=${encodeURIComponent(apartment.id)}`}
+            >
+              <MessageCircle className="mr-2 h-4 w-4" aria-hidden="true" />
+              Message host
+            </Link>
+          </Button>
           <div className="mt-4">
             <ListingPrice amount={apartment.price} size="lg" />
           </div>

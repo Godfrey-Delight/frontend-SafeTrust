@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { WishlistAnnouncer, useSaveStay } from "@/features/listings";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -18,31 +19,24 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import HotelHeader from "@/components/listings/HotelHeader";
 import { PageContainer } from "@/components/layouts/PageContainer";
-import { getConversationIdForApartment } from "@/lib/conversationRoutes";
 import { APARTMENT_LISTINGS } from "@/lib/mockData/apartmentListings";
 import { ListingPrice } from "@/components/listings/ListingPrice";
 
 export default function GuestSuggestionsPage() {
   const router = useRouter();
   const [selectedId, setSelectedId] = useState(APARTMENT_LISTINGS[0].id);
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const { isSaved, toggleSaved, announcement } = useSaveStay();
 
   const selected = APARTMENT_LISTINGS.find((a) => a.id === selectedId)!;
-  const selectedConversationId = getConversationIdForApartment(selected.name);
-
-  const toggleFavorite = (id: string) => {
-    setFavorites((curr) =>
-      curr.includes(id) ? curr.filter((f) => f !== id) : [...curr, id],
-    );
-  };
 
   return (
     <div
-      className="min-h-screen bg-white dark:bg-slate-900
+      className="theme-guest min-h-screen bg-white dark:bg-slate-900
                     text-gray-900 dark:text-white"
     >
       {/* Standalone header */}
       <HotelHeader />
+      <WishlistAnnouncer message={announcement} />
 
       <PageContainer width="wide" className="py-6">
         <nav
@@ -85,7 +79,7 @@ export default function GuestSuggestionsPage() {
               </p>
               <Link
                 href="/rent"
-                className="text-sm text-orange-700 hover:text-orange-800
+                className="text-sm text-primary hover:text-primary/80
                            font-medium underline hover:no-underline"
               >
                 Browse all →
@@ -102,7 +96,7 @@ export default function GuestSuggestionsPage() {
                   className={cn(
                     "relative flex w-72 shrink-0 items-start gap-2 rounded-xl border p-3 transition-colors lg:w-full",
                     selectedId === apt.id
-                      ? "border-orange-400 bg-orange-50 dark:bg-orange-900/10"
+                      ? "border-primary bg-accent"
                       : "border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800",
                   )}
                 >
@@ -120,7 +114,7 @@ export default function GuestSuggestionsPage() {
                     }}
                     aria-pressed={selectedId === apt.id}
                     aria-label={`Select ${apt.name}`}
-                    className="flex min-w-0 flex-1 items-start gap-2 rounded-lg text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+                    className="flex min-w-0 flex-1 items-start gap-2 rounded-lg text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {/* Thumbnail */}
                     <div
@@ -181,16 +175,20 @@ export default function GuestSuggestionsPage() {
 
                   <button
                     type="button"
-                    onClick={() => toggleFavorite(apt.id)}
-                    aria-pressed={favorites.includes(apt.id)}
-                    aria-label="Toggle favorite"
+                    onClick={() => toggleSaved(apt.id)}
+                    aria-pressed={isSaved(apt.id)}
+                    aria-label={
+                      isSaved(apt.id)
+                        ? `Remove ${apt.name} from Wishlists`
+                        : `Save ${apt.name} to Wishlists`
+                    }
                     className="relative z-10 shrink-0 rounded-full p-1 focus-visible:ring-2 focus-visible:ring-orange-500 mt-0.5"
                   >
                     <Heart
                       aria-hidden="true"
                       className={cn(
                         "h-4 w-4 transition-colors",
-                        favorites.includes(apt.id)
+                        isSaved(apt.id)
                           ? "fill-red-500 text-red-500"
                           : "text-gray-300 hover:text-red-400",
                       )}
@@ -220,8 +218,8 @@ export default function GuestSuggestionsPage() {
                 <span
                   className="absolute bottom-4 left-4 inline-flex
                                  items-center gap-1 rounded-lg
-                                 bg-orange-700 px-3 py-1.5 text-xs font-semibold
-                                 text-white shadow-md"
+                                 bg-primary px-3 py-1.5 text-xs font-semibold
+                                 text-primary-foreground shadow-md"
                 >
                   Promoted
                 </span>
@@ -275,17 +273,17 @@ export default function GuestSuggestionsPage() {
                             text-sm text-gray-600 dark:text-gray-300"
             >
               <span className="flex items-center gap-1.5">
-                <Bed className="h-4 w-4 text-orange-700" />
+                <Bed className="h-4 w-4 text-primary" />
                 {selected.bedrooms} Bedrooms
               </span>
               <span>·</span>
               <span className="flex items-center gap-1.5">
-                <Bath className="h-4 w-4 text-orange-700" />
+                <Bath className="h-4 w-4 text-primary" />
                 {selected.bathrooms} Bathrooms
               </span>
               <span>·</span>
               <span className="flex items-center gap-1.5">
-                <PawPrint className="h-4 w-4 text-orange-700" />
+                <PawPrint className="h-4 w-4 text-primary" />
                 {selected.petFriendly ? "Pet friendly" : "No pets"}
               </span>
             </div>
@@ -336,9 +334,9 @@ export default function GuestSuggestionsPage() {
                 onClick={() =>
                   router.push(`/rent/${selected.id}/escrow/create`)
                 }
-                className="w-full rounded-xl bg-orange-700 py-3 text-center
-                           text-sm font-semibold text-white shadow-lg
-                           shadow-orange-500/20 hover:bg-orange-800
+                className="w-full rounded-xl bg-primary py-3 text-center
+                           text-sm font-semibold text-primary-foreground shadow-lg
+                           shadow-primary/20 hover:bg-primary/90
                            transition-colors"
               >
                 Book with Escrow
@@ -356,21 +354,16 @@ export default function GuestSuggestionsPage() {
                 View full details
               </button>
 
-              {selectedConversationId && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    router.push(`/dashboard/messages/${selectedConversationId}`)
-                  }
-                  className="flex w-full items-center justify-center gap-2
-                             rounded-xl border border-orange-700 py-2.5 text-sm
-                             font-semibold text-orange-700 hover:bg-orange-50
-                             dark:hover:bg-orange-950/20 transition-colors"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  Message host
-                </button>
-              )}
+              <Link
+                href={`/dashboard/messages/new?listing=${encodeURIComponent(selected.id)}`}
+                className="flex w-full items-center justify-center gap-2
+                           rounded-xl border border-primary py-2.5 text-sm
+                           font-semibold text-primary hover:bg-accent
+                           transition-colors"
+              >
+                <MessageCircle aria-hidden="true" className="h-4 w-4" />
+                Message host
+              </Link>
             </div>
           </aside>
         </div>
