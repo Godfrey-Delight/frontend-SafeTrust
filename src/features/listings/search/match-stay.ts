@@ -1,5 +1,5 @@
 import { addDays, isIsoDate, nightsBetween } from "./date-only";
-import type { ApartmentListing } from "@/types/hotel";
+import type { ApartmentListing, ApartmentBooking } from "@/types/hotel";
 import type { DateSearch, GuestCounts, StaySearch } from "./stay-search";
 
 export interface StayRange {
@@ -74,7 +74,7 @@ export function isRangeAvailable(
   const endDay = nightsBetween(today, range.end);
   if (endDay > availability.horizonDays) return false;
 
-  return !availability.booked.some((booking) =>
+  return !availability.booked.some((booking: ApartmentBooking) =>
     overlaps(range, {
       start: addDays(today, booking.startDay),
       end: addDays(today, booking.startDay + booking.nights),
