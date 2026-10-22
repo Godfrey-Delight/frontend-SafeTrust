@@ -6,7 +6,10 @@ import { PriceMarker } from "@/features/listings/map/PriceMarker";
 interface MapProps {
   coordinates: [number, number];
   hotelName: string;
-  price: number;
+  // Optional: callers that only need to mark a location (e.g. the room
+  // listing's map dialog) don't have a price to show; PriceMarker falls
+  // back to hotelName as the pin's label in that case.
+  price?: number;
 }
 
 const HotelMap: React.FC<MapProps> = ({ coordinates, hotelName, price }) => {

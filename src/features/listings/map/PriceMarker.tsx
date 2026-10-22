@@ -7,15 +7,19 @@ import { LISTING_PRICE_UNIT } from "@/components/listings/ListingPrice";
 interface PriceMarkerProps {
   id: string;
   position: [number, number];
-  price: number;
+  price?: number;
   selected?: boolean;
   onSelect?: (id: string) => void;
 }
 
 /**
- * A price pin rendered as a local CSS marker (`.price-pin`, see
- * `globals.css`), never a CDN icon. Reused by both the results map (with
- * selection) and the hotel-detail map (static, no `onSelect`).
+ * A pin rendered as a local CSS marker (`.price-pin`, see `globals.css`),
+ * never a CDN icon or Leaflet's default icon (which 404s under a bundler
+ * without extra config). Shows the formatted price when one is given;
+ * falls back to `id` as the pin's label otherwise, for callers that only
+ * need to mark a location (the hotel-detail map has no price context).
+ * Reused by the results map (with selection) and the hotel-detail map
+ * (static, no `onSelect`).
  */
 export function PriceMarker({
   id,
@@ -24,10 +28,14 @@ export function PriceMarker({
   selected = false,
   onSelect,
 }: PriceMarkerProps) {
-  const label = `${formatListingPrice(price)} per ${LISTING_PRICE_UNIT}`;
+  const pinText = price === undefined ? id : formatListingPrice(price);
+  const label =
+    price === undefined
+      ? id
+      : `${formatListingPrice(price)} per ${LISTING_PRICE_UNIT}`;
   const icon = new DivIcon({
     className: "", // no default Leaflet square
-    html: `<span class="price-pin${selected ? " is-selected" : ""}">${formatListingPrice(price)}</span>`,
+    html: `<span class="price-pin${selected ? " is-selected" : ""}">${pinText}</span>`,
     iconSize: undefined,
   });
 
