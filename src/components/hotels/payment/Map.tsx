@@ -14,7 +14,11 @@ interface MapProps {
 
 const HotelMap: React.FC<MapProps> = ({ coordinates, hotelName, price }) => {
   return (
-    <BaseMap center={coordinates} zoom={13}>
+    <BaseMap
+      center={coordinates}
+      zoom={13}
+      className="h-full w-full aspect-auto"
+    >
       <PriceMarker id={hotelName} position={coordinates} price={price} />
     </BaseMap>
   );

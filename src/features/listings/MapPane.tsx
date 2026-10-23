@@ -52,7 +52,12 @@ export default function MapPane({
 
   return (
     <div className="relative h-full w-full">
-      <BaseMap center={center} onTileError={() => setTileError(true)}>
+      <BaseMap
+        center={center}
+        className="h-full w-full aspect-auto rounded-none"
+        showErrorOverlay={false}
+        onTileError={() => setTileError(true)}
+      >
         <FitBounds listings={listings} />
         {listings.map((listing) => (
           <PriceMarker
