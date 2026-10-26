@@ -8,7 +8,12 @@ import {
 } from "./escrow-filters";
 import type { EscrowData } from "@/types/dashboard";
 
-const make = (over: Partial<EscrowData> & { id: string }): EscrowData =>
+type MakeOver = Omit<Partial<EscrowData>, "metadata"> & {
+  id: string;
+  metadata?: Record<string, unknown>;
+};
+
+const make = (over: MakeOver): EscrowData =>
   ({
     status: "pending",
     amount: 100,
