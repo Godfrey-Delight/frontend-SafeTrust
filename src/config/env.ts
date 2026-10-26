@@ -22,12 +22,27 @@ const defaultTrustlessNetwork =
  * so Next.js can inline it at build time. Never spread process.env.
  */
 export const clientSchema = z.object({
-  NEXT_PUBLIC_FIREBASE_API_KEY: z.string().min(1),
-  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: z.string().min(1),
-  NEXT_PUBLIC_FIREBASE_PROJECT_ID: z.string().min(1),
-  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: z.string().min(1),
-  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: z.string().min(1),
-  NEXT_PUBLIC_FIREBASE_APP_ID: z.string().min(1),
+  NEXT_PUBLIC_FIREBASE_API_KEY: z
+    .string()
+    .min(1)
+    .default("demo-firebase-api-key"),
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: z
+    .string()
+    .min(1)
+    .default("demo-project.firebaseapp.com"),
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: z.string().min(1).default("demo-project"),
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: z
+    .string()
+    .min(1)
+    .default("demo-project.firebasestorage.app"),
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: z
+    .string()
+    .min(1)
+    .default("000000000000"),
+  NEXT_PUBLIC_FIREBASE_APP_ID: z
+    .string()
+    .min(1)
+    .default("1:000000000000:web:demo-app-id"),
   NEXT_PUBLIC_TRUSTLESS_API_URL: z
     .string()
     .url()
