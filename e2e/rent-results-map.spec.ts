@@ -64,8 +64,9 @@ test("pin and card counts/ids match, including 0 and 1 result", async ({
   // Default (unfiltered) results: pin count matches card count.
   await page.goto("/rent?view=map");
   const allCards = page.getByRole("article");
+  // count() does not wait, and the grid is dynamically imported.
+  await expect.poll(() => allCards.count()).toBeGreaterThan(1);
   const cardCount = await allCards.count();
-  expect(cardCount).toBeGreaterThan(1);
   await expect(page.locator(".price-pin")).toHaveCount(cardCount);
 });
 
@@ -195,6 +196,8 @@ for (const width of [360, 768, 1280]) {
         (value) => localStorage.setItem("safetrust-theme", value),
         theme,
       );
+      // axe would otherwise measure contrast on half-faded reveal animations.
+      await page.emulateMedia({ reducedMotion: "reduce" });
       await page.setViewportSize({ width, height: 844 });
       await page.goto("/rent?view=map");
       await expect(page.locator("html")).toHaveClass(new RegExp(theme));
