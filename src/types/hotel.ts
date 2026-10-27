@@ -13,6 +13,16 @@ export interface ApartmentOwner {
   walletAddress?: string;
 }
 
+/**
+ * Demo availability, relative to the guest's local "today":
+ * published nights are [today, today + horizonDays),
+ * each booking blocks [today + startDay, today + startDay + nights).
+ */
+export interface DemoAvailability {
+  horizonDays: number;
+  booked: Array<{ startDay: number; nights: number }>;
+}
+
 export interface ApartmentListing extends ApartmentAmenitySummary {
   id: string;
   name: string;
@@ -33,20 +43,10 @@ export interface ApartmentListing extends ApartmentAmenitySummary {
   owner: ApartmentOwner;
   description: string;
   rating: number;
-  favorite?: boolean;
+  /** Adults + children. Never derived from bedrooms. */
   maxGuests?: number;
   maxInfants?: number;
-  availability?: ApartmentAvailability;
-}
-
-export interface ApartmentBooking {
-  startDay: number;
-  nights: number;
-}
-
-export interface ApartmentAvailability {
-  horizonDays: number;
-  booked: ApartmentBooking[];
+  availability?: DemoAvailability;
 }
 
 export interface HotelSearchResult {

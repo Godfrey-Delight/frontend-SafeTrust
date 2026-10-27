@@ -20,6 +20,8 @@ import { useRentFilters } from "@/components/listings/filters/useRentFilters";
 import { LazyMotionProvider } from "@/components/ui/LazyMotionProvider";
 import { RentReveal } from "@/components/listings/RentMotion";
 import {
+  applyStaySearch,
+  useStaySearch,
   WishlistAnnouncer,
   useSaveStay,
   selectRentResults,
@@ -38,6 +40,7 @@ function RentPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q")?.trim() ?? "";
   const geo = useGeolocation();
+  const { search, today } = useStaySearch();
   const { filters, setFilters, reset, activeCount } = useRentFilters();
 
   const destinationCounts = useMemo(
@@ -60,16 +63,18 @@ function RentPageContent() {
     canSortByDistance,
     outside: isOutsideCostaRica,
     distances,
-  } = useMemo(
-    () =>
-      selectRentResults({
-        listings: APARTMENT_LISTINGS,
-        filters,
-        query,
-        position: geo.position,
-      }),
-    [filters, query, geo.position],
-  );
+  } = useMemo(() => {
+    const selected = selectRentResults({
+      listings: APARTMENT_LISTINGS,
+      filters,
+      query,
+      position: geo.position,
+    });
+    return {
+      ...selected,
+      results: applyStaySearch(selected.results, search, today),
+    };
+  }, [filters, query, geo.position, search, today]);
 
   useNearestOnGrant(geo.position, isOutsideCostaRica, filters, setFilters);
 
@@ -103,6 +108,14 @@ function RentPageContent() {
               count={results.length}
               isOutsideCostaRica={isOutsideCostaRica}
             />
+            {search.dates.mode !== "any" ? (
+              <p
+                className="text-sm text-gray-600 dark:text-gray-400"
+                aria-live="polite"
+              >
+                Demo availability — confirm dates with the host.
+              </p>
+            ) : null}
 
             <RentToolbar
               geo={geo}

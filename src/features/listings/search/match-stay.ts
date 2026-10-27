@@ -1,101 +1,75 @@
-import { addDays, isIsoDate, nightsBetween } from "./date-only";
-import type { ApartmentListing, ApartmentBooking } from "@/types/hotel";
-import type { DateSearch, GuestCounts, StaySearch } from "./stay-search";
+import type { ApartmentListing } from "@/types/hotel";
+import { addDays } from "./date-only";
+import type {
+  DateSearch,
+  GuestCounts,
+  IsoDate,
+  StaySearch,
+} from "./stay-search";
 
+/** Half-open [start, end): check-out day is free for the next guest. */
 export interface StayRange {
-  start: string;
-  end: string;
+  start: IsoDate;
+  end: IsoDate;
 }
 
-export function overlaps(left: StayRange, right: StayRange): boolean {
-  return left.start < right.end && right.start < left.end;
-}
+export const overlaps = (a: StayRange, b: StayRange) =>
+  a.start < b.end && a.end > b.start; // ISO dates compare correctly as strings
 
-export function candidateStays(
-  dates: DateSearch,
-  today: string,
-): StayRange[] | null {
-  if (dates.mode === "any") return null;
-  if (dates.mode === "flexible") return [];
-  if (
-    !isIsoDate(dates.checkIn) ||
-    !isIsoDate(dates.checkOut) ||
-    dates.checkIn < today ||
-    dates.checkIn >= dates.checkOut
-  ) {
-    return [];
-  }
-
-  const tolerance = dates.tolerance ?? 0;
-  return Array.from({ length: tolerance * 2 + 1 }, (_, index) => {
-    const offset = index - tolerance;
-    return {
-      start: addDays(dates.checkIn, offset),
-      end: addDays(dates.checkOut, offset),
-    };
-  }).filter((range) => range.start >= today);
+export function isRangeAvailable(
+  listing: ApartmentListing,
+  range: StayRange,
+  today: IsoDate,
+): boolean {
+  const availability = listing.availability;
+  if (!availability) return false; // unknown is not "available"
+  const horizonEnd = addDays(today, availability.horizonDays);
+  if (range.start < today || range.end > horizonEnd) return false;
+  return !availability.booked.some(({ startDay, nights }) =>
+    overlaps(range, {
+      start: addDays(today, startDay),
+      end: addDays(today, startDay + nights),
+    }),
+  );
 }
 
 export function matchesGuests(
   listing: ApartmentListing,
   guests: GuestCounts,
 ): boolean {
-  const hasGuestConstraint =
-    guests.adults + guests.children + guests.infants + guests.pets > 0;
-  if (!hasGuestConstraint) return true;
-  if (
-    listing.maxGuests === undefined ||
-    listing.maxInfants === undefined ||
-    guests.adults + guests.children > listing.maxGuests ||
-    guests.infants > listing.maxInfants ||
-    (guests.pets > 0 && !listing.petFriendly)
-  ) {
-    return false;
-  }
+  const { adults, children, infants, pets } = guests;
+  if (adults + children + infants + pets === 0) return true; // "Any guests"
+  if (listing.maxGuests === undefined) return false;
+  if (adults + children > listing.maxGuests) return false;
+  if (infants > (listing.maxInfants ?? 0)) return false;
+  if (pets > 0 && !listing.petFriendly) return false;
   return true;
 }
 
-export function isRangeAvailable(
-  listing: ApartmentListing,
-  range: StayRange,
-  today: string,
-): boolean {
-  const availability = listing.availability;
-  if (
-    !availability ||
-    !isIsoDate(range.start) ||
-    !isIsoDate(range.end) ||
-    range.start < today ||
-    range.start >= range.end
-  ) {
-    return false;
-  }
-
-  const endDay = nightsBetween(today, range.end);
-  if (endDay > availability.horizonDays) return false;
-
-  return !availability.booked.some((booking: ApartmentBooking) =>
-    overlaps(range, {
-      start: addDays(today, booking.startDay),
-      end: addDays(today, booking.startDay + booking.nights),
-    }),
-  );
+/** Stays to try for a date search; SD-07 adds tolerance and flexible windows. */
+export function candidateStays(dates: DateSearch, _today: IsoDate) {
+  if (dates.mode === "any") return null;
+  if (dates.mode === "exact")
+    return [{ start: dates.checkIn, end: dates.checkOut }];
+  return []; // flexible: SD-07
 }
 
 export function matchesDates(
   listing: ApartmentListing,
   dates: DateSearch,
-  today: string,
+  today: IsoDate,
 ): boolean {
   const candidates = candidateStays(dates, today);
-  if (candidates === null) return true;
-  return candidates.some((range) => isRangeAvailable(listing, range, today));
+  return (
+    candidates === null ||
+    candidates.some((range) => isRangeAvailable(listing, range, today))
+  );
 }
 
 export function applyStaySearch(
   listings: ApartmentListing[],
   search: StaySearch,
-  today: string,
+  today: IsoDate,
 ): ApartmentListing[] {
   return listings.filter(
     (listing) =>
