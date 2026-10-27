@@ -151,7 +151,8 @@ const eslintConfig = [
           patterns: [
             {
               group: ["@/features/*", "@/components/*", "@/server/*"],
-              message: "lib/ is shared and must not depend on features or UI.",
+              message:
+                "lib/ is shared and must not depend on features or UI.",
             },
             {
               group: ["../../../*"],

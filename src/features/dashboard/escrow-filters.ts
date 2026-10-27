@@ -37,12 +37,13 @@ const inRange = (
   r: { from: string | null; to: string | null },
 ) =>
   (!r.from && !r.to) ||
-  (!!iso && (!r.from || dayOf(iso) >= r.from) && (!r.to || dayOf(iso) <= r.to));
+  (!!iso &&
+    (!r.from || dayOf(iso) >= r.from) &&
+    (!r.to || dayOf(iso) <= r.to));
 
 /** An amount range is invalid when both bounds are set and min > max. */
-export const isAmountRangeValid = (
-  f: Pick<EscrowFilters, "minAmount" | "maxAmount">,
-) => f.minAmount === null || f.maxAmount === null || f.minAmount <= f.maxAmount;
+export const isAmountRangeValid = (f: Pick<EscrowFilters, "minAmount" | "maxAmount">) =>
+  f.minAmount === null || f.maxAmount === null || f.minAmount <= f.maxAmount;
 
 export function applyEscrowFilters(
   escrows: readonly EscrowData[],
@@ -62,14 +63,12 @@ export function applyEscrowFilters(
   );
 
   const time = (iso?: string) => (iso ? Date.parse(iso) || 0 : 0);
-  const sorters: Record<EscrowSort, (a: EscrowData, b: EscrowData) => number> =
-    {
-      recent: (a, b) => time(b.createdAt) - time(a.createdAt),
-      "amount-high": (a, b) => b.amount - a.amount,
-      "amount-low": (a, b) => a.amount - b.amount,
-      checkin: (a, b) =>
-        time(a.metadata?.checkInDate) - time(b.metadata?.checkInDate),
-    };
+  const sorters: Record<EscrowSort, (a: EscrowData, b: EscrowData) => number> = {
+    recent: (a, b) => time(b.createdAt) - time(a.createdAt),
+    "amount-high": (a, b) => b.amount - a.amount,
+    "amount-low": (a, b) => a.amount - b.amount,
+    checkin: (a, b) => time(a.metadata?.checkInDate) - time(b.metadata?.checkInDate),
+  };
   return [...result].sort(sorters[f.sort]);
 }
 

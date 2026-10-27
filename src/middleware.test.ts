@@ -173,14 +173,17 @@ describe("middleware", () => {
       "/rent/1/book",
       "/rent/1/escrow/create",
       "/rent/1/escrow/esc-123",
-    ])("redirects %s to /login without a token", async (pathname) => {
-      const res = await middleware(makeRequest(pathname));
+    ])(
+      "redirects %s to /login without a token",
+      async (pathname) => {
+        const res = await middleware(makeRequest(pathname));
 
-      expect(res.status).toBe(307);
-      expect(res.headers.get("location")).toContain(
-        `/login?redirect=${encodeURIComponent(pathname)}`,
-      );
-    });
+        expect(res.status).toBe(307);
+        expect(res.headers.get("location")).toContain(
+          `/login?redirect=${encodeURIComponent(pathname)}`,
+        );
+      },
+    );
   });
 
   describe("skip escape hatch", () => {
